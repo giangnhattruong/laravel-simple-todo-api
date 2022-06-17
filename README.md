@@ -1,6 +1,6 @@
 Install:
 1. Make sure php and sql(mysql, pgsql,...) have already been installed in your local machine
-2. Create a .env file with your database configuration, see .env.example in the repository for more infomation
+2. Create a .env file with your database configuration, see .env.example in the repository as an example
 3. Run: composer install
 4. Run: npm install
 
