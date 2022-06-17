@@ -7,6 +7,7 @@ Install:
 Run the app:
 1. Run: php artisan serve --port=8000
 2. Route list:
+
 . GET: localhost:8000/api/todos?text=my-todo&status=all&color=[red,green]
 
 . POST: localhost:8000/api/todos
