@@ -37,7 +37,7 @@ class TodoController extends Controller
         // Base query
         $baseTodoQuery = DB::table('todos')
             ->join('colors', 'colors.id', '=', 'todos.color_id')
-            ->select('todos.id', 'todos.text', 'todos.created_at', 'todos.completed', 'todos.deleted_at', 'colors.name');
+            ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at');
 
         // Map color filter to array of color ids
         $colorIds = $this->stringServices->toArrayOfColorId($request->color);
@@ -91,7 +91,12 @@ class TodoController extends Controller
      */
     public function show($id)
     {
-        return Todo::with('color')->find($id);
+        // return Todo::with('color')->find($id);
+        return DB::table('todos')
+            ->join('colors', 'colors.id', '=', 'todos.color_id')
+            ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at')
+            ->where('todos.id', $id)
+            ->first();
     }
 
     /**
