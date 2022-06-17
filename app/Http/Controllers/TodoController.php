@@ -163,8 +163,7 @@ class TodoController extends Controller
         $todoIds = $this->stringServices->toArrayOfNumber($todoIdsString);
 
         if (empty($todoIds)) {
-            return Todo::query()
-                ->where('completed', static::NOT_COMPLETED)
+            return Todo::where('completed', static::NOT_COMPLETED)
                 ->update([
                     'completed' => static::COMPLETED
                 ]);
