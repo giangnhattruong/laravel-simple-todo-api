@@ -13,7 +13,7 @@ class Todo extends Model
     protected $fillable = [
         'text',
         'completed',
-        'color'
+        'color_id'
     ];
 
     public function color() {

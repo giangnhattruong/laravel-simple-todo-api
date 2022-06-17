@@ -18,22 +18,22 @@ class StringServicesTest extends TestCase
         $this->stringServices = $this->app->make(StringServicesInterface::class);
     }
 
-    public function test_convert_string_to_array() {
+    public function test_convert_string_to_array_of_number() {
         $testStr = '[1,2,3]';
-        $result = $this->stringServices->toArray($testStr);
+        $result = $this->stringServices->toArrayOfNumber($testStr);
         $this->assertTrue(in_array(1, $result));
         $this->assertTrue(in_array(2, $result));
         $this->assertTrue(in_array(3, $result));
     }
 
-    public function test_convert_string_to_array_return_empty_array_if_invalid_input() {
+    public function test_convert_string_to_array_of_number_then_return_empty_array_if_invalid_input() {
         $testStr = '[sad,asdsad]';
-        $result = $this->stringServices->toArray($testStr);
+        $result = $this->stringServices->toArrayOfNumber($testStr);
         $this->assertSame([], $result, "Return value is not an empty array as expected.");
     }
 
-    public function test_convert_string_to_array_return_empty_array_if_input_is_null() {
-        $result = $this->stringServices->toArray(null);
+    public function test_convert_string_to_array_of_number_then_return_empty_array_if_input_is_null() {
+        $result = $this->stringServices->toArrayOfNumber(null);
         $this->assertSame([], $result, "Return value is not an empty array as expected.");
     }
 }

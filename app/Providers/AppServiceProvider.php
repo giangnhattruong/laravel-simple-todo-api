@@ -24,6 +24,7 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(TodoRepositoryInterface::class, TodoRepositoryImpl::class);
         $this->app->bind(TodoServicesInterface::class, TodoServicesImpl::class);
         $this->app->bind(StringServicesInterface::class, StringServicesImpl::class);
+        $this->app->bind(ColorMappingServiceInterface::class, ColorMappingServiceImpl::class);
     }
 
     /**

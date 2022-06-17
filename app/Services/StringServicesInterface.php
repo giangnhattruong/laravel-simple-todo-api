@@ -3,5 +3,6 @@
 namespace App\Services;
 
 interface StringServicesInterface {
-    public function toArray(string $arrayString);
+    public function toArrayOfNumber(string $arrayString);
+    public function toArrayOfColorId($colorArrayInString = '');
 }
