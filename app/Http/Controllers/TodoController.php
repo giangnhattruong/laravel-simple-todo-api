@@ -19,6 +19,7 @@ class TodoController extends Controller
 
     const COMPLETED = 1;
     const NOT_COMPLETED = 0;
+    const DEFAULT_PAGE_SIZE = 9;
 
     public function __construct(StringServicesInterface $stringServices) {
         $this->stringServices = $stringServices;
@@ -30,20 +31,21 @@ class TodoController extends Controller
      */
     public function index(Request $request)
     {
-        // Check for filter, if there is no filter, return all
-        $pageSize = $request->pageSize;
+        // Get page size
+        $pageSize = $request->pageSize === null ? static::DEFAULT_PAGE_SIZE : $request->pageSize;
 
         // Base query
         $baseTodoQuery = DB::table('todos')
             ->join('colors', 'colors.id', '=', 'todos.color_id')
             ->select('todos.id', 'todos.text', 'todos.created_at', 'todos.completed', 'todos.deleted_at', 'colors.name');
 
-        // Map filter color to array of color ids
+        // Map color filter to array of color ids
         $colorIds = $this->stringServices->toArrayOfColorId($request->color);
         if (!empty($colorIds)) {
             $baseTodoQuery = $baseTodoQuery->whereIn('color_id', $colorIds);
         }
 
+        // Check for status filter
         switch ($request->status) {
             case 'active':
                 $baseTodoQuery = $baseTodoQuery
@@ -63,7 +65,7 @@ class TodoController extends Controller
                 break;
         }
 
-        $todos = $baseTodoQuery->distinct()->get();
+        $todos = $baseTodoQuery->distinct()->paginate($pageSize);
 
         return $todos;
     }
