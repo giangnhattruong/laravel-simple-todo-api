@@ -33,32 +33,37 @@ class TodoController extends Controller
         // Check for filter, if there is no filter, return all
         $pageSize = $request->pageSize;
 
+        // Base query
+        $baseTodoQuery = DB::table('todos')
+            ->join('colors', 'colors.id', '=', 'todos.color_id')
+            ->select('todos.id', 'todos.text', 'todos.created_at', 'todos.completed', 'todos.deleted_at', 'colors.name');
+
         // Map filter color to array of color ids
         $colorIds = $this->stringServices->toArrayOfColorId($request->color);
+        if (!empty($colorIds)) {
+            $baseTodoQuery = $baseTodoQuery->whereIn('color_id', $colorIds);
+        }
 
-        $filterStatus = $request->status;
+        switch ($request->status) {
+            case 'active':
+                $baseTodoQuery = $baseTodoQuery
+                    ->where('completed', static::NOT_COMPLETED)
+                    ->where('deleted_at', null);
+                break;
+            case 'completed':
+                $baseTodoQuery = $baseTodoQuery
+                    ->where('completed', static::COMPLETED)
+                    ->where('deleted_at', null);
+                break;
+            case 'deleted':
+                $baseTodoQuery = $baseTodoQuery->where('deleted_at', '!=', null);
+                break;
+            default:
+                $baseTodoQuery = $baseTodoQuery->where('deleted_at', null);
+                break;
+        }
 
-
-    
-        // Filter all
-        $todos = DB::table('todos')
-            ->join('colors', 'colors.id', '=', 'todos.color_id')
-            ->select('todos.text', 'todos.completed', 'colors.name')
-            ->distinct()->paginate($pageSize);
-        // or
-        // $todos = Todo::with('color')->paginate($pageSize);
-
-        // Filter trash only
-        // $todos = DB::table('todos')
-        //     ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
-        //     ->select('todos.id', 'todos.text', 'todos.created_at', 'todos.completed', 'todos.deleted_at', 'colors.name')
-        //     ->where('todos.deleted_at', '!=', null)
-        //     ->orderBy('created_at', 'desc')
-        //     ->distinct()->paginate($pageSize);
-        // or
-        // $todos = Todo::with('color')->onlyTrashed()->paginate($pageSize);
-
-        // Filter 
+        $todos = $baseTodoQuery->distinct()->get();
 
         return $todos;
     }
