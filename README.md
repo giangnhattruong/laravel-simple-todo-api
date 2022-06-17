@@ -6,7 +6,7 @@
 5. Database & seed: ```php artisan migrate --seed```
 
 ### Run the app:
-1. Run: php artisan serve --port=8000
+1. Run: ```php artisan serve --port=8000```
 2. Route list:
 
 - GET: [localhost:8000/api/todos](http://localhost:8000/api/todos) ---params (optional): pageSize=9, color=[green,blue,orange,purple,red], status=all|active|completed|deleted
