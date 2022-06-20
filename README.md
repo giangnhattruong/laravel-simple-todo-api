@@ -42,7 +42,7 @@
 - DELETE: [localhost:8000/api/todos/{id}](http://localhost:8000/api/todos/1)
 
 ## GET: [localhost:8000/api/todos](http://localhost:8000/api/todos)
-###Route lấy danh sách các todo kèm với thông tin pagination
+### Route lấy danh sách các todo kèm với thông tin pagination
 
 ##### Param (không bắt buộc) - filter kết quả các todo:
 - Param ```status``` với một trong các giá trị
