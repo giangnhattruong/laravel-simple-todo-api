@@ -182,7 +182,7 @@ class TodoController extends Controller
         // Set todo's new color, if no color was set then get the previous todo's color
         $newTodoColorString = isset($newTodoInfos['color']) ? strtolower($newTodoInfos['color']) : '';
         $newTodoColor = Color::where('name', '=' , ucfirst($newTodoColorString))->first();
-        
+
         if ($newTodoColorString !== '' && $newTodoColor === null) {
             array_push($errorMessage, 'Color not found, please try again.');
         } else {
@@ -253,7 +253,7 @@ class TodoController extends Controller
         $todoIdsString = $request->ids;
         $todoIds = $this->stringServices->toArrayOfNumber($todoIdsString);
 
-        if ($request->ids !== '') {
+        if (!isset($todoIdsString)) {
             $result = Todo::where('completed', static::NOT_COMPLETED)
                 ->update([
                     'completed' => static::COMPLETED
@@ -272,7 +272,7 @@ class TodoController extends Controller
                 $status = 400
             ) : 
             response()->json(
-                $data = ['message' => "Mark " . $result . " todo(s) as completed."],
+                $data = ['message' => $result . " todo(s) were marked as completed."],
                 $status = 200
             );
     }
@@ -287,7 +287,7 @@ class TodoController extends Controller
         $todoIdsString = $request->ids;
         $todoIds = $this->stringServices->toArrayOfNumber($todoIdsString);
 
-        if ($request->ids !== '') {
+        if (!isset($todoIdsString)) {
             $result = Todo::where('completed', static::COMPLETED)
                 ->delete();
         } else {
@@ -298,11 +298,11 @@ class TodoController extends Controller
 
         return $result === 0 ? 
             response()->json(
-                $data = ['message' => "Clear failed."],
+                $data = ['message' => "No todos were cleared."],
                 $status = 400
             ) : 
             response()->json(
-                $data = ['message' => "Clear successful."],
+                $data = ['message' => $result . " todo(s) were cleared."],
                 $status = 200
             );
     }
