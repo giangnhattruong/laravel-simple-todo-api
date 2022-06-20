@@ -36,7 +36,7 @@ class TodoController extends Controller
 
         // Base query
         $baseTodoQuery = DB::table('todos')
-            ->join('colors', 'colors.id', '=', 'todos.color_id')
+            ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
             ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at');
 
         // Map color filter to array of color ids
@@ -93,7 +93,7 @@ class TodoController extends Controller
     {
         // return Todo::with('color')->find($id);
         return DB::table('todos')
-            ->join('colors', 'colors.id', '=', 'todos.color_id')
+            ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
             ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at')
             ->where('todos.id', $id)
             ->first();
@@ -109,14 +109,22 @@ class TodoController extends Controller
     public function update(UpdateTodoRequest $request, $id)
     {
         $currentTodo = Todo::find($id);
+
+        if ($currentTodo === null) {
+            return response()->json(
+                $data = ['message' => 'Todo not found'],
+                $status = 400
+            );
+        }
+
         $newTodoInfos = $request->validated();
 
         // Format new todo text
         $newTodoText = isset($newTodoInfos['text']) ? $newTodoInfos['text'] : $currentTodo->text;
         
         // Format & map color string(green/blue/orange/purple/red) to color_id
-        $newTodoColorString = isset($newTodoInfos['color']) ? $newTodoInfos['color'] : '';
-        $newTodoColor = Color::where('name', 'ilike' , strtolower($newTodoColorString))->first();
+        $newTodoColorString = isset($newTodoInfos['color']) ? strtolower($newTodoInfos['color']) : '';
+        $newTodoColor = Color::where('name', '=' , ucfirst($newTodoColorString))->first();
         $newTodoColor = $newTodoColor === null ? $currentTodo->color_id : $newTodoColor->id;
 
         // Format & map completed string(true/false) to number(0/1)
