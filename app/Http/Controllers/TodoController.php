@@ -37,39 +37,6 @@ class TodoController extends Controller
         $pageSize = $request->pageSize === null ? static::DEFAULT_PAGE_SIZE : $request->pageSize;
 
         // Base query
-        // $baseTodoQuery = DB::table('todos')
-        //     ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
-        //     ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at');
-
-        // Map color filter to array of color ids
-        // $colorIds = $this->stringServices->toArrayOfColorId($request->colors);
-        // if (!empty($colorIds)) {
-        //     $baseTodoQuery = $baseTodoQuery->whereIn('color_id', $colorIds);
-        // }
-
-        // Check for status filter
-        // switch ($request->status) {
-        //     case 'active':
-        //         $baseTodoQuery = $baseTodoQuery
-        //             ->where('completed', static::NOT_COMPLETED)
-        //             ->where('deleted_at', null);
-        //         break;
-        //     case 'completed':
-        //         $baseTodoQuery = $baseTodoQuery
-        //             ->where('completed', static::COMPLETED)
-        //             ->where('deleted_at', null);
-        //         break;
-        //     case 'deleted':
-        //         $baseTodoQuery = $baseTodoQuery->where('deleted_at', '!=', null);
-        //         break;
-        //     default:
-        //         $baseTodoQuery = $baseTodoQuery->where('deleted_at', null);
-        //         break;
-        // }
-
-        // $todos = $baseTodoQuery->distinct()->paginate($pageSize);
-
-        // Base query
         $baseTodoQuery = Todo::query();
 
         // Filter by color
@@ -80,7 +47,7 @@ class TodoController extends Controller
             });
         }
 
-        // Check for status filter
+        // Filter by status
         switch ($request->status) {
             case 'active':
                 $baseTodoQuery = $baseTodoQuery
@@ -97,17 +64,16 @@ class TodoController extends Controller
             case '':
                 break;
             default:
-            $baseTodoQuery = $baseTodoQuery->where('id', 0);
-                break;
+                $baseTodoQuery = $baseTodoQuery->where('id', 0);
         }
 
-        // Final result
+        // Get final result
         $todos = $baseTodoQuery->with('color')->distinct()->paginate($pageSize);
 
         if (empty($todos->toArray()['data'])) {
             return response()->json(
                 $data = ['message' => 'Todos not found'],
-                $status = 400
+                $status = 404
             );
         }
 
@@ -126,7 +92,7 @@ class TodoController extends Controller
             'text' => $request->validated()['text'],
         ]);
 
-        return new TodoResource($todo);
+        return new TodoResource(Todo::with('color')->find($todo->id));
     }
 
     /**
@@ -137,18 +103,12 @@ class TodoController extends Controller
      */
     public function show($id)
     {
-        // return DB::table('todos')
-        //     ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
-        //     ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at')
-        //     ->where('todos.id', $id)
-        //     ->first();
-
         $todo = Todo::with('color')->find($id);
 
         if ($todo === null) {
             return response()->json(
                 $data = ['message' => 'Todo not found'],
-                $status = 400
+                $status = 404
             );
         }
 
@@ -169,7 +129,7 @@ class TodoController extends Controller
         if ($currentTodo === null) {
             return response()->json(
                 $data = ['message' => 'Todo not found'],
-                $status = 400
+                $status = 404
             );
         }
 
@@ -208,7 +168,7 @@ class TodoController extends Controller
         if (!empty($errorMessage)) {
             return response()->json(
                 $data = ['message' => $errorMessage],
-                $status = 400,
+                $status = 404,
             );
         }
 
@@ -234,7 +194,7 @@ class TodoController extends Controller
         if ($todo === null) {
             return response()->json(
                 $data = ['message' => 'Todo not found'],
-                $status = 400
+                $status = 404
             );
         }
 
@@ -269,7 +229,7 @@ class TodoController extends Controller
         return $result === 0 ? 
             response()->json(
                 $data = ['message' => "No todos were marked."],
-                $status = 400
+                $status = 404
             ) : 
             response()->json(
                 $data = ['message' => $result . " todo(s) were marked as completed."],
@@ -299,7 +259,7 @@ class TodoController extends Controller
         return $result === 0 ? 
             response()->json(
                 $data = ['message' => "No todos were cleared."],
-                $status = 400
+                $status = 404
             ) : 
             response()->json(
                 $data = ['message' => $result . " todo(s) were cleared."],
