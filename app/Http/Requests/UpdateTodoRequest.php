@@ -24,9 +24,9 @@ class UpdateTodoRequest extends FormRequest
     public function rules()
     {
         return [
-            'text' => 'string|nullable',
-            'color' => 'string|nullable',
-            'completed' => 'string|nullable',
+            'text' => 'required_without_all:color,completed|string',
+            'color' => 'required_without_all:text,completed|string|nullable',
+            'completed' => 'required_without_all:text,color|string|nullable',
         ];
     }
 }

@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreTodoRequest;
 use App\Http\Requests\UpdateTodoRequest;
+use App\Http\Resources\TodoResource;
 use App\Models\Color;
 use App\Models\Todo;
 use App\Services\StringServicesInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -35,39 +37,81 @@ class TodoController extends Controller
         $pageSize = $request->pageSize === null ? static::DEFAULT_PAGE_SIZE : $request->pageSize;
 
         // Base query
-        $baseTodoQuery = DB::table('todos')
-            ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
-            ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at');
+        // $baseTodoQuery = DB::table('todos')
+        //     ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
+        //     ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at');
 
         // Map color filter to array of color ids
-        $colorIds = $this->stringServices->toArrayOfColorId($request->color);
+        // $colorIds = $this->stringServices->toArrayOfColorId($request->colors);
+        // if (!empty($colorIds)) {
+        //     $baseTodoQuery = $baseTodoQuery->whereIn('color_id', $colorIds);
+        // }
+
+        // Check for status filter
+        // switch ($request->status) {
+        //     case 'active':
+        //         $baseTodoQuery = $baseTodoQuery
+        //             ->where('completed', static::NOT_COMPLETED)
+        //             ->where('deleted_at', null);
+        //         break;
+        //     case 'completed':
+        //         $baseTodoQuery = $baseTodoQuery
+        //             ->where('completed', static::COMPLETED)
+        //             ->where('deleted_at', null);
+        //         break;
+        //     case 'deleted':
+        //         $baseTodoQuery = $baseTodoQuery->where('deleted_at', '!=', null);
+        //         break;
+        //     default:
+        //         $baseTodoQuery = $baseTodoQuery->where('deleted_at', null);
+        //         break;
+        // }
+
+        // $todos = $baseTodoQuery->distinct()->paginate($pageSize);
+
+        // Base query
+        $baseTodoQuery = Todo::query();
+
+        // Filter by color
+        $colorIds = $this->stringServices->toArrayOfColorId($request->colors);
         if (!empty($colorIds)) {
-            $baseTodoQuery = $baseTodoQuery->whereIn('color_id', $colorIds);
+            $baseTodoQuery = $baseTodoQuery->whereHas('color', function (Builder $query) use($colorIds) {
+                $query->whereIn('id', $colorIds);
+            });
         }
 
         // Check for status filter
         switch ($request->status) {
             case 'active':
                 $baseTodoQuery = $baseTodoQuery
-                    ->where('completed', static::NOT_COMPLETED)
-                    ->where('deleted_at', null);
+                    ->where('completed', static::NOT_COMPLETED);
                 break;
             case 'completed':
                 $baseTodoQuery = $baseTodoQuery
-                    ->where('completed', static::COMPLETED)
-                    ->where('deleted_at', null);
+                    ->where('completed', static::COMPLETED);
                 break;
             case 'deleted':
-                $baseTodoQuery = $baseTodoQuery->where('deleted_at', '!=', null);
+                $baseTodoQuery = $baseTodoQuery->onlyTrashed();
+                break;
+            case 'all':
+            case '':
                 break;
             default:
-                $baseTodoQuery = $baseTodoQuery->where('deleted_at', null);
+            $baseTodoQuery = $baseTodoQuery->where('id', 0);
                 break;
         }
 
-        $todos = $baseTodoQuery->distinct()->paginate($pageSize);
+        // Final result
+        $todos = $baseTodoQuery->with('color')->distinct()->paginate($pageSize);
 
-        return $todos;
+        if (empty($todos->toArray()['data'])) {
+            return response()->json(
+                $data = ['message' => 'Todos not found'],
+                $status = 400
+            );
+        }
+
+        return TodoResource::collection($todos);
     }
 
     /**
@@ -78,9 +122,11 @@ class TodoController extends Controller
      */
     public function store(StoreTodoRequest $request)
     {
-        return Todo::create([
+        $todo = Todo::create([
             'text' => $request->validated()['text'],
         ]);
+
+        return new TodoResource($todo);
     }
 
     /**
@@ -91,12 +137,22 @@ class TodoController extends Controller
      */
     public function show($id)
     {
-        // return Todo::with('color')->find($id);
-        return DB::table('todos')
-            ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
-            ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at')
-            ->where('todos.id', $id)
-            ->first();
+        // return DB::table('todos')
+        //     ->leftjoin('colors', 'colors.id', '=', 'todos.color_id')
+        //     ->selectRaw('todos.id, todos.text, colors.name as color, todos.completed, todos.created_at, todos.deleted_at')
+        //     ->where('todos.id', $id)
+        //     ->first();
+
+        $todo = Todo::with('color')->find($id);
+
+        if ($todo === null) {
+            return response()->json(
+                $data = ['message' => 'Todo not found'],
+                $status = 400
+            );
+        }
+
+        return new TodoResource($todo);
     }
 
     /**
@@ -117,17 +173,23 @@ class TodoController extends Controller
             );
         }
 
-        $newTodoInfos = $request->validated();
+        $newTodoInfos = $request->validated();  // Deny if no input was set
+        $errorMessage = []; // To collect errors cause by input
 
-        // Format new todo text
+        // Set todo's new text, if no text was set then get the previous todo's text
         $newTodoText = isset($newTodoInfos['text']) ? $newTodoInfos['text'] : $currentTodo->text;
         
-        // Format & map color string(green/blue/orange/purple/red) to color_id
+        // Set todo's new color, if no color was set then get the previous todo's color
         $newTodoColorString = isset($newTodoInfos['color']) ? strtolower($newTodoInfos['color']) : '';
         $newTodoColor = Color::where('name', '=' , ucfirst($newTodoColorString))->first();
-        $newTodoColor = $newTodoColor === null ? $currentTodo->color_id : $newTodoColor->id;
+        
+        if ($newTodoColorString !== '' && $newTodoColor === null) {
+            array_push($errorMessage, 'Color not found, please try again.');
+        } else {
+            $newTodoColor = $newTodoColor === null ? $currentTodo->color_id : $newTodoColor->id;
+        }
 
-        // Format & map completed string(true/false) to number(0/1)
+        // Set todo's new completed status, if no status was set then get the previous todo's status
         $newTodoStatusString = isset($newTodoInfos['completed']) ? $newTodoInfos['completed'] : '';
         switch ($newTodoStatusString) {
             case "true":
@@ -136,8 +198,18 @@ class TodoController extends Controller
             case "false":
                 $newTodoStatus = 0;
                 break;
-            default:
+            case "":
                 $newTodoStatus = $currentTodo->completed;
+                break;
+            default:
+                array_push($errorMessage, 'Invalid status, please try again.');
+        }
+
+        if (!empty($errorMessage)) {
+            return response()->json(
+                $data = ['message' => $errorMessage],
+                $status = 400,
+            );
         }
 
         $currentTodo->update([
@@ -146,7 +218,7 @@ class TodoController extends Controller
             'completed' => $newTodoStatus,
         ]);
 
-        return Todo::find($id);
+        return new TodoResource(Todo::with('color')->find($id));
     }
 
     /**
@@ -157,7 +229,18 @@ class TodoController extends Controller
      */
     public function destroy($id)
     {
-        return Todo::find($id)->delete();
+        $todo = Todo::find($id);
+
+        if ($todo === null) {
+            return response()->json(
+                $data = ['message' => 'Todo not found'],
+                $status = 400
+            );
+        }
+
+        $todo->delete();
+
+        return new TodoResource(Todo::with('color')->onlyTrashed()->find($id));
     }
 
     /**
@@ -170,18 +253,28 @@ class TodoController extends Controller
         $todoIdsString = $request->ids;
         $todoIds = $this->stringServices->toArrayOfNumber($todoIdsString);
 
-        if (empty($todoIds)) {
-            return Todo::where('completed', static::NOT_COMPLETED)
+        if ($request->ids !== '') {
+            $result = Todo::where('completed', static::NOT_COMPLETED)
+                ->update([
+                    'completed' => static::COMPLETED
+                ]);
+        } else {
+            $result = Todo::whereIn('id', $todoIds)
+                ->where('completed', static::NOT_COMPLETED)
                 ->update([
                     'completed' => static::COMPLETED
                 ]);
         }
 
-        return Todo::whereIn('id', $todoIds)
-            ->where('completed', static::NOT_COMPLETED)
-            ->update([
-                'completed' => static::COMPLETED
-            ]);
+        return $result === 0 ? 
+            response()->json(
+                $data = ['message' => "No todos were marked."],
+                $status = 400
+            ) : 
+            response()->json(
+                $data = ['message' => "Mark " . $result . " todo(s) as completed."],
+                $status = 200
+            );
     }
 
     /**
@@ -194,13 +287,23 @@ class TodoController extends Controller
         $todoIdsString = $request->ids;
         $todoIds = $this->stringServices->toArrayOfNumber($todoIdsString);
 
-        if (empty($todoIds)) {
-            return Todo::where('completed', static::COMPLETED)
+        if ($request->ids !== '') {
+            $result = Todo::where('completed', static::COMPLETED)
+                ->delete();
+        } else {
+            $result = Todo::whereIn('id', $todoIds)
+                ->where('completed', static::COMPLETED)
                 ->delete();
         }
 
-        return Todo::whereIn('id', $todoIds)
-            ->where('completed', static::COMPLETED)
-            ->delete();
+        return $result === 0 ? 
+            response()->json(
+                $data = ['message' => "Clear failed."],
+                $status = 400
+            ) : 
+            response()->json(
+                $data = ['message' => "Clear successful."],
+                $status = 200
+            );
     }
 }
