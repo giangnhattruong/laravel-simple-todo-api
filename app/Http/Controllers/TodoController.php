@@ -67,6 +67,24 @@ class TodoController extends Controller
                 $baseTodoQuery = $baseTodoQuery->where('id', 0);
         }
 
+        // Sort result
+        switch ($request->sortBy) {
+            case 'dateDesc':
+                $baseTodoQuery = $baseTodoQuery->orderBy('created_at', 'desc');
+                break;
+            case 'dateAsc':
+                $baseTodoQuery = $baseTodoQuery->orderBy('created_at', 'asc');
+                break;
+            case 'nameDesc':
+                $baseTodoQuery = $baseTodoQuery->orderBy('text', 'desc');
+                break;
+            case 'nameAsc':
+                $baseTodoQuery = $baseTodoQuery->orderBy('text', 'asc');
+                break;
+            default:
+                $baseTodoQuery = $baseTodoQuery->orderBy('created_at', 'desc');
+        }
+
         // Get final result
         $todos = $baseTodoQuery->with('color')->distinct()->paginate($pageSize);
 
