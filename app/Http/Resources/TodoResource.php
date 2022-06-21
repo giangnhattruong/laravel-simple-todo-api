@@ -18,6 +18,7 @@ class TodoResource extends JsonResource
             'id' => $this->id,
             'text' => $this->text,
             'completed' => $this->completed === 0 ? false : true,
+            'created_at' => $this->created_at,
             'color' => new ColorResource($this->whenLoaded('color')),
         ];
     }
