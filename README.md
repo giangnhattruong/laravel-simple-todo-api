@@ -51,6 +51,11 @@
     - ```completed``` để lấy tất cả các todo đã hoàn thành  và chưa bị xóa
     - ```deleted``` để lấy tất cả các todo đã bị xóa
 - Param ```colors``` với giá trị string như sau ```[green,blue,orange,purple,red]```
+- Param ```sortBy``` với một trong các giá trị
+    - ```dateDesc``` để sort theo ngày giảm dần (ngày mới nhất trước)
+    - ```dateAsc``` để sort theo ngày tăng dần (ngày cũ nhất trước)
+    - ```nameDesc``` để sort theo tên giảm dần (Z->A)
+    - ```nameAsc``` để sort theo tên tăng dần (A->Z)
 
 ##### Khi không thêm param nào, mặc định route sẽ tìm tất cả các todo chưa bị xóa
 
