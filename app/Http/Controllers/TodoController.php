@@ -90,7 +90,7 @@ class TodoController extends Controller
 
         if (empty($todos->toArray()['data'])) {
             return response()->json(
-                $data = ['message' => 'Todos not found'],
+                $data = ['message' => 'Todos not found.'],
                 $status = 404
             );
         }
@@ -125,7 +125,7 @@ class TodoController extends Controller
 
         if ($todo === null) {
             return response()->json(
-                $data = ['message' => 'Todo not found'],
+                $data = ['message' => 'Todo not found.'],
                 $status = 404
             );
         }
@@ -146,7 +146,7 @@ class TodoController extends Controller
 
         if ($currentTodo === null) {
             return response()->json(
-                $data = ['message' => 'Todo not found'],
+                $data = ['message' => 'Todo not found.'],
                 $status = 404
             );
         }
@@ -212,7 +212,7 @@ class TodoController extends Controller
 
         if ($todo === null) {
             return response()->json(
-                $data = ['message' => 'Todo not found'],
+                $data = ['message' => 'Todo not found.'],
                 $status = 404
             );
         }
@@ -247,7 +247,7 @@ class TodoController extends Controller
 
         return $result === 0 ? 
             response()->json(
-                $data = ['message' => "No todos were marked."],
+                $data = ['message' => "No todos were marked as completed."],
                 $status = 404
             ) : 
             response()->json(
