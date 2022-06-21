@@ -27,7 +27,7 @@
 5. Database & seed: ```php artisan migrate --seed```
 6. Chạy command: ```php artisan serve --port=8000```
 
-## Route list
+## Todo route list
 - GET: [localhost:8000/api/todos](http://localhost:8000/api/todos)
     - params (optional): pageSize=9, color=[green,blue,orange,purple,red], status=all|active|completed|deleted, sortBy=dateDesc|dateAsc|nameDesc|nameAsc
 - POST: [localhost:8000/api/todos](http://localhost:8000/api/todos)
@@ -316,3 +316,12 @@ Nếu không có param được đưa vào, tất cả những todo sẽ đượ
     "message": "9 todo(s) were cleared."
 }
 ```
+
+## Color route list
+- GET: [localhost:8000/api/colors](http://localhost:8000/api/colors)
+- POST: [localhost:8000/api/colors](http://localhost:8000/api/colors)
+    - param: name="Black"
+- GET: [localhost:8000/api/colors/{id}](http://localhost:8000/api/colors/1)
+- PUT: [localhost:8000/api/colors/{id}](http://localhost:8000/api/colors/1)
+    - param: name="Black"
+- DELETE: [localhost:8000/api/colors/{id}](http://localhost:8000/api/colors/1)

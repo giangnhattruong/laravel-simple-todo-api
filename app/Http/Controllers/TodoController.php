@@ -161,6 +161,7 @@ class TodoController extends Controller
         $newTodoColorString = isset($newTodoInfos['color']) ? strtolower($newTodoInfos['color']) : '';
         $newTodoColor = Color::where('name', '=' , ucfirst($newTodoColorString))->first();
 
+        // If color was set, but can't be determined then return error
         if ($newTodoColorString !== '' && $newTodoColor === null) {
             array_push($errorMessage, 'Color not found, please try again.');
         } else {
@@ -218,7 +219,7 @@ class TodoController extends Controller
 
         $todo->delete();
 
-        return new TodoResource(Todo::with('color')->onlyTrashed()->find($id));
+        return new TodoResource($todo);
     }
 
     /**
