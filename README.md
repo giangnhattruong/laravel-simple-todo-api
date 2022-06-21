@@ -19,7 +19,7 @@
 
 #API link: [GitHub](https://github.com/giangnhattruong/laravel-simple-todo-api) -->
 ## Cài đặt:
-1. Trước tiên cần cài đặt php, composer, nodejs và sql(mysql, pgsql,...).
+1. Trước tiên cần cài đặt php, composer, nodejs và sql(mysql, pgsql,...)
 2. Tạo một file .env (copy từ file .env.example)
 3. Config database tại file .env này
 3. Chạy command: ```composer install```
@@ -29,7 +29,7 @@
 
 ## Route list
 - GET: [localhost:8000/api/todos](http://localhost:8000/api/todos)
-    - params (optional): pageSize=9, color=[green,blue,orange,purple,red], status=all|active|completed|deleted
+    - params (optional): pageSize=9, color=[green,blue,orange,purple,red], status=all|active|completed|deleted, sortBy=dateDesc|dateAsc|nameDesc|nameAsc
 - POST: [localhost:8000/api/todos](http://localhost:8000/api/todos)
     - param: text="Feed my cat"
 - GET: [localhost:8000/api/todos/mark-completed](http://localhost:8000/api/todos/mark-completed)
