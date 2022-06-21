@@ -57,7 +57,7 @@
     - ```nameDesc``` để sort theo tên giảm dần (Z->A)
     - ```nameAsc``` để sort theo tên tăng dần (A->Z)
 
-##### Khi không thêm param nào, mặc định route sẽ tìm tất cả các todo chưa bị xóa
+##### Khi không thêm param nào, mặc định route sẽ tìm tất cả các todo chưa bị xóa, kết quả được sort theo ngày mới nhất trước
 
 ##### Kết quả
 Ví dụ kết quả trả về khi tìm thấy todo **(status code 200)**:
