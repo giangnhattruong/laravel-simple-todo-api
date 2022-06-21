@@ -126,7 +126,7 @@ Nếu không có todo nào thì kết quả như sau **(status code 404)**:
 
 ```
 {
-    "message": "Todos not found"
+    "message": "Todos not found."
 }
 ```
 
@@ -172,7 +172,7 @@ Nếu không có todo nào thì kết quả như sau **(status code 404)**:
 
 ```
 {
-    "message": "Todo not found"
+    "message": "Todo not found."
 }
 ```
 
@@ -243,7 +243,7 @@ Khi không tìm thấy todo để update sẽ báo lỗi **(status code 404)**
 
 ```
 {
-    "message": "Todo not found"
+    "message": "Todo not found."
 }
 ```
 
@@ -269,7 +269,7 @@ Khi không tìm thấy todo để update sẽ báo lỗi **(status code 404)**
 
 ```
 {
-    "message": "Todo not found"
+    "message": "Todo not found."
 }
 ```
 
@@ -283,7 +283,7 @@ Nếu param ```ids``` được đưa vào sai định dạng, sẽ nhận thông
 
 ```
 {
-    "message": "No todos were marked."
+    "message": "No todos were marked as completed."
 }
 ```
 
