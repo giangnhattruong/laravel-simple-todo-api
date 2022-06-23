@@ -82,7 +82,7 @@ class TodoController extends Controller
                 $baseTodoQuery = $baseTodoQuery->orderBy('text', 'asc');
                 break;
             default:
-                // $baseTodoQuery = $baseTodoQuery->orderBy('created_at', 'desc');
+                $baseTodoQuery = $baseTodoQuery->orderBy('created_at', 'desc');
         }
 
         // Get final result
