@@ -16,7 +16,7 @@ class CreateTodosTable extends Migration
         Schema::create('todos', function (Blueprint $table) {
             $table->id();
             $table->text('text');
-            $table->unsignedInteger('color_id')->default(0);
+            $table->foreignId('color_id')->nullable();
             $table->unsignedInteger('completed')->default(0);
             $table->softDeletes();
             $table->timestamps();
